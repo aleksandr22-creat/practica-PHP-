@@ -4,6 +4,7 @@ namespace Src;
 
 use Error;
 
+
 class Route
 {
    private static array $routes = [];
