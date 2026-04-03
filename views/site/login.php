@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/public/style.css">
 <h2>Авторизация</h2>
 <h3><?= $message ?? ''; ?></h3>
 

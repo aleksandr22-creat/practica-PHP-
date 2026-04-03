@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/public/style.css">
 <h2>Регистрация нового пользователя</h2>
 <h3><?= $message ?? ''; ?></h3>
 <form method="post">
