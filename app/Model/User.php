@@ -44,4 +44,30 @@ class User extends Model implements IdentityInterface
             'password' => md5($credentials['password'])])->first();
     }
 
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->role && $this->role->name === 'admin';
+    }
+
+    public function isScienceOfficer()
+    {
+        return $this->role && $this->role->name === 'science_officer';
+    }
+
+    public function logout(): void
+    {
+        Auth::logout();
+        app()->route->redirect('/login'); // перенаправляем на логин, а не на /hello
+    }
+
+    public function aspirant()
+    {
+        return $this->hasOne(Aspirant::class);
+    }
 }
