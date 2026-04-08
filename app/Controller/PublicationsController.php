@@ -3,7 +3,7 @@
 namespace Controller;
 
 use Model\Publication;
-use Model\Aspirant;
+use Model\Aspirants;
 use Model\Supervisor;
 use Src\Request;
 use Src\View;
@@ -21,7 +21,7 @@ class PublicationsController
     // Форма добавления
     public function create(Request $request): string
     {
-        $aspirants = Aspirant::all();
+        $aspirants = Aspirants::all();
         $supervisors = Supervisor::all();
         return (new View())->render('publications.create', [
             'aspirants' => $aspirants,
@@ -32,26 +32,46 @@ class PublicationsController
     // Сохранение новой публикации
     public function store(Request $request): void
     {
-        $publication = Publication::create($request->all());
-
-        // Привязываем аспирантов
-        if ($request->has('aspirant_ids')) {
-            $publication->aspirants()->attach($request->aspirant_ids);
+        if (!Auth::user()->isAdmin() && !Auth::user()->isScienceOfficer()) {
+            app()->route->redirect('/');
         }
 
-        // Привязываем руководителей
-        if ($request->has('supervisor_ids')) {
-            $publication->supervisors()->attach($request->supervisor_ids);
+        // Получаем все данные из запроса
+        $data = $request->all();
+
+        // Получаем ID аспирантов и руководителей
+        $aspirantIds = $data['aspirant_ids'] ?? [];
+        $supervisorIds = $data['supervisor_ids'] ?? [];
+
+        // Удаляем эти ключи из данных для публикации
+        unset($data['aspirant_ids'], $data['supervisor_ids']);
+
+        // Создаем публикацию
+        $publication = Publication::create($data);
+
+        // Привязываем аспирантов (если есть)
+        if (!empty($aspirantIds)) {
+            $publication->aspirants()->attach($aspirantIds);
+        }
+
+        // Привязываем научных руководителей (если есть)
+        if (!empty($supervisorIds)) {
+            $publication->supervisors()->attach($supervisorIds);
         }
 
         app()->route->redirect('/publications');
     }
 
-    // Форма редактирования
-    public function edit(Request $request): string
+    // Форма редактирования - получаем id из параметра маршрута
+    public function edit($id): string
     {
-        $publication = Publication::find($request->id);
-        $aspirants = Aspirant::all();
+        $publication = Publication::with('aspirants', 'supervisors')->find($id);
+
+        if (!$publication) {
+            app()->route->redirect('/publications');
+        }
+
+        $aspirants = Aspirants::all();
         $supervisors = Supervisor::all();
 
         return (new View())->render('publications.edit', [
@@ -61,26 +81,39 @@ class PublicationsController
         ]);
     }
 
-    // Обновление публикации
-    public function update(Request $request): void
+    // Обновление публикации - ИСПРАВЛЕНО: сначала $id, потом $request
+    public function update($id, Request $request): void
     {
-        $publication = Publication::find($request->id);
-        $publication->update($request->all());
+        $publication = Publication::find($id);
 
-        // Обновляем связи
-        $publication->aspirants()->sync($request->aspirant_ids ?? []);
-        $publication->supervisors()->sync($request->supervisor_ids ?? []);
+        if (!$publication) {
+            app()->route->redirect('/publications');
+        }
+
+        $data = $request->all();
+
+        $aspirantIds = $data['aspirant_ids'] ?? [];
+        $supervisorIds = $data['supervisor_ids'] ?? [];
+
+        unset($data['aspirant_ids'], $data['supervisor_ids']);
+
+        $publication->update($data);
+        $publication->aspirants()->sync($aspirantIds);
+        $publication->supervisors()->sync($supervisorIds);
 
         app()->route->redirect('/publications');
     }
 
-    // Удаление публикации
-    public function destroy(Request $request): void
+    // Удаление публикации - получаем id из параметра маршрута
+    public function destroy($id): void
     {
-        $publication = Publication::find($request->id);
-        $publication->aspirants()->detach();
-        $publication->supervisors()->detach();
-        $publication->delete();
+        $publication = Publication::find($id);
+
+        if ($publication) {
+            $publication->aspirants()->detach();
+            $publication->supervisors()->detach();
+            $publication->delete();
+        }
 
         app()->route->redirect('/publications');
     }

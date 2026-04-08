@@ -7,11 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Supervisor extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['full_name', 'department'];
+    protected $fillable = [
+        'full_name',
+        'academic_degree',
+        'position',
+        'department',
+        'email',
+        'phone',
+        'bio'
+    ];
 
     public function aspirants()
     {
-        return $this->hasMany(Aspirant::class);
+        return $this->hasMany(Aspirants::class);
     }
 
     public function publications()

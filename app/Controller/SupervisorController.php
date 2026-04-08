@@ -5,6 +5,7 @@ namespace Controller;
 use Model\Supervisor;
 use Src\Request;
 use Src\View;
+use Src\Auth\Auth;
 
 class SupervisorController
 {
@@ -24,29 +25,57 @@ class SupervisorController
     // Сохранение
     public function store(Request $request): void
     {
+        if (!Auth::user()->isAdmin() && !Auth::user()->isScienceOfficer()) {
+            app()->route->redirect('/');
+        }
+
         Supervisor::create($request->all());
         app()->route->redirect('/supervisors');
     }
 
-    // Форма редактирования
-    public function edit(Request $request): string
+    // Форма редактирования - получаем id из параметра маршрута
+    public function edit($id): string
     {
-        $supervisor = Supervisor::find($request->id);
+        $supervisor = Supervisor::find($id);
+
+        if (!$supervisor) {
+            app()->route->redirect('/supervisors');
+        }
+
+        // ПРОВЕРЬТЕ: правильно ли передается переменная
         return (new View())->render('supervisors.edit', ['supervisor' => $supervisor]);
     }
 
-    // Обновление
-    public function update(Request $request): void
+    // Обновление - сначала id, потом Request
+    public function update($id, Request $request): void
     {
-        $supervisor = Supervisor::find($request->id);
+        if (!Auth::user()->isAdmin() && !Auth::user()->isScienceOfficer()) {
+            app()->route->redirect('/');
+        }
+
+        $supervisor = Supervisor::find($id);
+
+        if (!$supervisor) {
+            app()->route->redirect('/supervisors');
+        }
+
         $supervisor->update($request->all());
         app()->route->redirect('/supervisors');
     }
 
-    // Удаление
-    public function destroy(Request $request): void
+    // Удаление - получаем id из параметра маршрута
+    public function destroy($id): void
     {
-        Supervisor::find($request->id)->delete();
+        if (!Auth::user()->isAdmin()) {
+            app()->route->redirect('/');
+        }
+
+        $supervisor = Supervisor::find($id);
+
+        if ($supervisor) {
+            $supervisor->delete();
+        }
+
         app()->route->redirect('/supervisors');
     }
 }

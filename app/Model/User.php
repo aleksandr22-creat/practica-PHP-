@@ -68,6 +68,6 @@ class User extends Model implements IdentityInterface
 
     public function aspirant()
     {
-        return $this->hasOne(Aspirant::class);
+        return $this->hasOne(Aspirants::class);
     }
 }

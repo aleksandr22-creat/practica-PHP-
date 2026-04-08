@@ -13,7 +13,7 @@ class Publication extends Model
 
     public function aspirants()
     {
-        return $this->belongsToMany(Aspirant::class, 'aspirant_publication');
+        return $this->belongsToMany(Aspirants::class, 'aspirant_publication');
     }
 
     public function supervisors()
