@@ -12,8 +12,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
             min-height: 100vh;
             padding: 40px 20px;
         }
@@ -31,7 +30,7 @@
         }
 
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: black;
             color: white;
             padding: 30px;
             text-align: center;
@@ -79,37 +78,31 @@
             transition: all 0.3s ease;
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
+        .primary {
+            background:black;
+            color: white;
             padding: 12px 30px;
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
+        .secondary {
+            background:red;
             color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
         }
 
         table {
@@ -125,67 +118,33 @@
         }
 
         th {
-            background: #667eea;
+            background: black;
             color: white;
         }
-
-        tr:hover {
-            background: #f5f5f5;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .alert-info {
-            background: #e3f2fd;
-            color: #1976d2;
-            border-left: 4px solid #1976d2;
-        }
-
-        .alert-warning {
-            background: #fff3e0;
-            color: #ff9800;
-            border-left: 4px solid #ff9800;
-        }
-
-        .badge {
+        .edit{
             display: inline-block;
-            padding: 4px 8px;
+            padding: 5px 10px;
+            background: #ff0000;
+            color: white;
+            text-decoration: none;
             border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
 
-        .badge-writing {
-            background: #fff3e0;
-            color: #ff9800;
-        }
-
-        .badge-pre_defense {
-            background: #e3f2fd;
-            color: #2196F3;
-        }
-
-        .badge-defended {
-            background: #e8f5e9;
-            color: #4CAF50;
-        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card">
         <div class="card-header">
-            <h1>🔍 Поиск аспирантов по научному руководителю</h1>
+            <h1> Поиск аспирантов по научному руководителю</h1>
             <p>Выберите руководителя, чтобы увидеть список его аспирантов</p>
         </div>
         <div class="card-body">
             <form method="POST" action="/aspirants/by-supervisor" class="search-form">
                 <div class="form-group">
-                    <label for="supervisor_id">👨‍🏫 Научный руководитель</label>
+                    <label for="supervisor_id">Научный руководитель</label>
                     <select name="supervisor_id" id="supervisor_id" class="form-control">
                         <option value="">-- Все руководители --</option>
                         <?php foreach ($supervisors as $supervisor): ?>
@@ -196,12 +155,12 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">🔍 Найти</button>
-                <a href="/aspirants/by-supervisor" class="btn btn-secondary">Сбросить</a>
+                <button type="submit" class="primary">Найти</button>
+                <a href="/aspirants/by-supervisor" class="secondary">Сбросить</a>
             </form>
 
             <?php if ($selected_supervisor): ?>
-                <div class="alert alert-info">
+                <div class="info">
                     📊 Найдено аспирантов: <strong><?= count($aspirants) ?></strong>
                 </div>
             <?php endif; ?>
@@ -226,15 +185,15 @@
                             <td>
                                 <?php
                                 $statusLabels = [
-                                    'writing' => '<span class="badge badge-writing">📝 Пишется</span>',
-                                    'pre_defense' => '<span class="badge badge-pre_defense">📋 Предзащита</span>',
-                                    'defended' => '<span class="badge badge-defended">🏆 Защищена</span>'
+                                    'writing' => '<span class="badge badge-writing">Пишется</span>',
+                                    'pre_defense' => '<span class="badge badge-pre_defense">Предзащита</span>',
+                                    'defended' => '<span class="badge badge-defended">Защищена</span>'
                                 ];
                                 echo $statusLabels[$aspirant->status] ?? '—';
                                 ?>
                             </td>
                             <td>
-                                <a href="/aspirants/edit/<?= $aspirant->id ?>" class="btn-edit">✏️</a>
+                                <a href="/aspirants/edit/<?= $aspirant->id ?>" class="edit">редактировать</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -242,34 +201,17 @@
                 </table>
             <?php else: ?>
                 <?php if ($selected_supervisor): ?>
-                    <div class="alert alert-warning">
-                        ⚠️ У выбранного руководителя нет аспирантов.
+                    <div class="warning">
+                        У выбранного руководителя нет аспирантов.
                     </div>
                 <?php else: ?>
-                    <div class="alert alert-info">
-                        📌 Выберите научного руководителя для отображения списка аспирантов.
+                    <div class="info">
+                        Выберите научного руководителя для отображения списка аспирантов.
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>
 </div>
-
-<style>
-    .btn-edit {
-        display: inline-block;
-        padding: 5px 10px;
-        background: #ff9800;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-    }
-    .btn-edit:hover {
-        background: #e68900;
-        transform: translateY(-2px);
-    }
-</style>
 </body>
 </html>

@@ -7,7 +7,7 @@ use Src\Request;
 use Src\View;
 use Model\User;
 use Src\Auth\Auth;
-
+use Src\Validator\Validator;
 
 class Site
 {
@@ -24,12 +24,29 @@ class Site
 
     public function signup(Request $request): string
     {
-        if ($request->method === 'POST' && User::create($request->all())) {
-            app()->route->redirect('/hello');
-            return '';
+        if ($request->method === 'POST') {
+
+            $validator = new Validator($request->all(), [
+                'name' => ['required'],
+                'login' => ['required', 'unique:users,login'],
+                'password' => ['required']
+            ], [
+                'required' => 'Поле :field пусто',
+                'unique' => 'Поле :field должно быть уникально'
+            ]);
+
+            if($validator->fails()){
+                return new View('site.signup',
+                    ['message' => json_encode($validator->errors(), JSON_UNESCAPED_UNICODE)]);
+            }
+
+            if (User::create($request->all())) {
+                app()->route->redirect('/login');
+            }
         }
-        return (new View())->render('site.signup');
+        return new View('site.signup');
     }
+
 
     public function login(Request $request): string
     {
@@ -39,7 +56,7 @@ class Site
 
         if (Auth::attempt($request->all())) {
             app()->route->redirect('/hello');
-            return ''; // редирект уже отправлен
+            return '';
         }
 
         return (new View())->render('site.login', ['message' => 'Неправильные логин или пароль']);
@@ -47,7 +64,8 @@ class Site
 
     public function logout(): void
     {
-        Auth::logout();
-        app()->route->redirect('/hello');
+        app()->auth->logout();
+        app()->route->redirect('/login');
     }
+
 }

@@ -228,7 +228,13 @@
 <body>
 <?php $user = \Src\Auth\Auth::user(); ?>
 
-<?php if ($user && !in_array($current_route ?? '', ['login', 'signup'])): ?>
+<?php
+$current_uri = $_SERVER['REQUEST_URI'] ?? '';
+$hide_header_routes = ['/login', '/signup'];
+$should_hide_header = in_array($current_uri, $hide_header_routes);
+
+if ($user && !$should_hide_header):
+    ?>
     <header class="header">
         <div class="container">
             <div class="header-top">

@@ -1,3 +1,4 @@
+
 <h1>Редактировать публикацию</h1>
 
 <form method="POST" action="/publications/update/<?= $publication->id ?>">

@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Src\Auth\IdentityInterface;
 
-
 class User extends Model implements IdentityInterface
 {
     use HasFactory;
@@ -15,14 +14,16 @@ class User extends Model implements IdentityInterface
     protected $fillable = [
         'name',
         'login',
-        'password'
+        'password',
+        'role_id'
     ];
 
     protected static function booted()
     {
-        static::created(function ($user) {
-            $user->password = md5($user->password);
-            $user->save();
+        static::creating(function ($user) {
+            if (!empty($user->password)) {
+                $user->password = md5($user->password);
+            }
         });
     }
 
@@ -31,19 +32,18 @@ class User extends Model implements IdentityInterface
         return self::where('id', $id)->first();
     }
 
-
     public function getId(): int
     {
         return $this->id;
     }
 
-
     public function attemptIdentity(array $credentials)
     {
-        return self::where(['login' => $credentials['login'],
-            'password' => md5($credentials['password'])])->first();
+        return self::where([
+            'login' => $credentials['login'],
+            'password' => md5($credentials['password'])
+        ])->first();
     }
-
 
     public function role()
     {
@@ -58,12 +58,6 @@ class User extends Model implements IdentityInterface
     public function isScienceOfficer()
     {
         return $this->role && $this->role->name === 'science_officer';
-    }
-
-    public function logout(): void
-    {
-        Auth::logout();
-        app()->route->redirect('/login'); // перенаправляем на логин, а не на /hello
     }
 
     public function aspirant()
